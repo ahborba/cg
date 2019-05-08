@@ -3,7 +3,7 @@ package br.com.uel.computacao.grafica.imagem;
 import org.opencv.core.Mat;
 
 public class Convolucao {
-	private double limiar;
+	private double limiar = 100 ;
 	private Mat imagem;
 	private int[][] sobelR1 = { { -1, -2, -1 }, { 0, 0, 0 }, { 1, 2, 1 } };
 	private int[][] sobelR2 = { { -1, 0, 1 }, { -2, 0, 2 }, { -1, 0, 1 } };
@@ -46,17 +46,22 @@ public class Convolucao {
 		}
 
 	}
-	private void sobel(int i, int j) {
+	private void sobel(int lin, int col) {
 		double r1,r2;
-		for(int k = 0; k < 3;k++) {
-			for (int n = 0; n < 3 ; n++) {
-
+		r1=r2=0;
+		for(int k = -1,i=0 ; k < 2;k++,i++) {
+			for (int n = -1,j=0; n < 2 ; n++,j++) {
+				double rgb[] = imagem.get(lin+k,col+n);
+				r1 += ((rgb[0]+rgb[1]+rgb[2])/3)*sobelR1[i][j];
+				r2 += ((rgb[0]+rgb[1]+rgb[2])/3)*sobelR2[i][j];
+				
 			}
+			System.out.println();
 		}
 		if(Math.sqrt(r1+r2) > limiar){
-			convolucao.put(i,j,black);
+			convolucao.put(lin,col,black);
 		}else {
-			convolucao.put(i, j,white);
+			convolucao.put(lin, col,white);
 		}
 	}
 
