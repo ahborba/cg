@@ -1,5 +1,7 @@
 package br.com.uel.computacao.grafica.imagem;
 
+import java.util.Scanner;
+
 import org.opencv.core.Mat;
 
 public class Imagem {
