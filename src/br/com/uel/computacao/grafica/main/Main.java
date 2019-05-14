@@ -13,29 +13,28 @@ public class Main {
 	public static Mat saida;
 	public static String path = "./.images/", nome = "tony.jpg", extensao = "jpg";
 	public static double angulo;
-	public static String metodo = "sobel";
+	public static String metodo = "mediana";
 	public static Mat mat;
 	public static int qtd = 1;
 	public static double limiar = 100;
 
 	public static void main(String[] args) {
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-		for (int i = 0; i < qtd; i++) {
 			lerArquivo();
 
 			Imagem imagem = new Imagem(mat);
 
 			saida = imagem.convolucao(mat, metodo);
-			System.out.println("Resultado salvo em: " + path + nome);
+			System.out.println("Resultado salvo em: " + path + metodo +"-"+nome);
 			Imgcodecs.imwrite(path + metodo +"-"+nome, saida);
-		}
+		
 	}
 
 	private static void lerArquivo() {
 		Scanner sc = new Scanner(System.in);
 
-//		System.out.print("Digite o diretorio do arquivo: ");
-//		path = sc.nextLine();
+		System.out.print("Digite o diretorio do arquivo: ");
+		path = sc.nextLine();
 
 		System.out.print("Digite o nome do arquivo: ");
 		nome = sc.nextLine();
