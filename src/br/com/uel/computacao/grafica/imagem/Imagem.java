@@ -3,6 +3,7 @@ package br.com.uel.computacao.grafica.imagem;
 import java.util.Scanner;
 
 import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
 
 public class Imagem {
 

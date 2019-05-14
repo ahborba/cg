@@ -161,7 +161,7 @@ public class Transformacao {
 	}
 	
 	public  Mat cinza(Mat imagem) {
-		Mat cinza = imagem.clone();
+		Mat cinza = new Mat(imagem.rows(),imagem.cols(),imagem.type());
 		
 		int lin = imagem.height();
 		int col = imagem.width();
