@@ -1,7 +1,5 @@
 package br.com.uel.computacao.grafica.imagem;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedList;
 
@@ -47,10 +45,10 @@ public class Convolucao implements Comparator<Pixel> {
 	private void borda(int i, int j, String metodo) {
 		switch (metodo) {
 		case "sobel":
-			sobel(i+1, j+1);
+			sobel(i + 1, j + 1);
 			break;
 		case "media":
-			media(i+1, j+1);
+			media(i + 1, j + 1);
 			break;
 		case "mediana":
 			mediana(i, j);
@@ -134,8 +132,9 @@ public class Convolucao implements Comparator<Pixel> {
 
 	private void mediana(int lin, int col) {
 		double rgb[] = null;
-		
-		double lista[] = new double[9];
+
+//		double lista[] = new double[9];
+		LinkedList<Pixel> lista = new LinkedList<Pixel>();
 
 		// percorre a vizinhança do pixel
 		for (int i = lin - raio; i <= lin + raio; i++) {
@@ -146,24 +145,31 @@ public class Convolucao implements Comparator<Pixel> {
 				if (j == this.col || j < 0) {
 					continue;
 				}
-				Arrays.fill(lista,(int)rgb[0]+rgb[1]+rgb[2]);
 				rgb = imagem.get(i, j);
+				lista.add(new Pixel(rgb[0], rgb[1], rgb[2], i, j));
+//				Arrays.fill(lista,(int)rgb[0]+rgb[1]+rgb[2]);
 //				lista.add((int)rgb[0]+rgb[1]+rgb[2]);
-//				System.out.print("i: "+i+"[r:"+lista.get(lista.size()-1).r+","+"g:"+lista.get(lista.size()-1).g+",b:"+lista.get(lista.size()-1).b+"]");
+//				System.out.print("i: " + i + "[r:" + lista.get(lista.size() - 1).r + "," + "g:"
+//						+ lista.get(lista.size() - 1).g + ",b:" + lista.get(lista.size() - 1).b + "]");
 //				System.out.print("[i: "+(i)+" col: "+(j)+"]");
 			}
 //			System.out.println();
 		}
-		Arrays.sort(lista);
+//		Arrays.sort(lista);
+		lista.sort(this);
+//		System.out.println("ordenacao: ");
+		for (int k = 0; k < lista.size(); k++) {
+//			System.out.println("[r:" + lista.get(k).r + "," + "g:" + lista.get(k).g + ",b:" + lista.get(k).b + "]");
+		}
 
-		
-//		System.out.println("\n[r:"+lista.get(lista.size()/2).r+","+"g:"+lista.get(lista.size()/2).g+",b:"+lista.get(lista.size()/2).b+"]");
-//		System.out.println(lista.size()/2);	
-//		Pixel pixel = lista.get(lista.size()/2);
-//		rgb = imagem.get(pixel.x,pixel.y);
+//		System.out.println("mediana: " + lista.size() / 2);
+		Pixel pixel = lista.get(lista.size() / 2);
+		rgb = imagem.get(pixel.x, pixel.y);
+//		System.out.println("\nvalor mediana: [r:" + pixel.r + "," + "g:" + pixel.g + ",b:" + pixel.b + "]");
+//		System.out.println("\nvalor mediana: [r:" + lista.get(lista.size() / 2).r + "," + "g:"
+//				+ lista.get(lista.size() / 2).g + ",b:" + lista.get(lista.size() / 2).b + "]");
 		convolucao.put(lin, col, rgb);
 	}
-
 
 	@SuppressWarnings("unused")
 	private void distanciaCor(int lin, int col) {
@@ -202,12 +208,12 @@ public class Convolucao implements Comparator<Pixel> {
 	@Override
 	public int compare(Pixel p1, Pixel p2) {
 
-		if(p1.r + p1.g + p1.b > p2.r +p2.g + p2.b) {
-		return 0;			
-	}else {
-		return 1;
-	}
-		
+		if (p1.r > p2.r && p1.g > p2.g && p1.b > p2.b) {
+			return 1;
+		} else {
+			return -1;
+		}
+
 //		if(p1.r > p2.r && p1.g > p2.g && p1.b > p2.b) {
 //			return 0;			
 //		}else {
