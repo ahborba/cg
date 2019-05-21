@@ -98,9 +98,9 @@ public class Imagem{
 	}
 
 	public Mat preenchimento(Mat imagem, int x, int y, int distancia,double [] cor) {
-		def = new Deformacao(imagem,distancia,cor);
-		System.out.println("gay: ");
-		return def.preenchimentoRecursivo(x, y,-1);
+		def = new Deformacao(imagem,distancia,cor,new Pixel(x,y,cor));
+//		return def.preenchimento(x, y);
+		return def.preenchimentoRecursivo(x, y,imagem.get(x,y));
 	}
 
 	public static BufferedImage converterMatBufferedImage(Mat mat) {

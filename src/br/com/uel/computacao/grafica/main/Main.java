@@ -29,8 +29,8 @@ public class Main {
 	private static Scanner lerArquivo() {
 		Scanner sc = new Scanner(System.in);
 
-//		System.out.print("Digite o diretorio do arquivo: ");
-//		path = sc.nextLine();
+		System.out.print("Digite o diretorio do arquivo: ");
+		path = sc.nextLine();
 
 		System.out.print("Digite o nome do arquivo: ");
 		nome = sc.nextLine();
@@ -60,7 +60,6 @@ public class Main {
 		cor[1] = sc.nextDouble();
 		System.out.print("b: ");
 		cor[2] = sc.nextDouble();
-		
 		
 		Imagem imagem = new Imagem(mat);
 		saida = imagem.preenchimento(mat, x, y,distancia, cor);
