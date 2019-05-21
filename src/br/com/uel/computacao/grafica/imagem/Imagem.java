@@ -1,11 +1,14 @@
 package br.com.uel.computacao.grafica.imagem;
 
-import java.util.Scanner;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.WritableRaster;
+
 
 import org.opencv.core.Mat;
-import org.opencv.imgcodecs.Imgcodecs;
 
-public class Imagem {
+
+public class Imagem{
 
 	private Contraste contraste;
 	private Zoom zoom;
@@ -13,6 +16,7 @@ public class Imagem {
 	private Transformacao transformacao;
 	private Convolucao conv;
 	int linha, coluna;
+	private Deformacao def;
 
 	public Imagem(Mat img) {
 	}
@@ -92,4 +96,30 @@ public class Imagem {
 		return conv.convolucao(metodo);
 
 	}
+
+	public Mat preenchimento(Mat imagem, int x, int y, int distancia,double [] cor) {
+		def = new Deformacao(imagem,distancia,cor);
+		System.out.println("gay: ");
+		return def.preenchimentoRecursivo(x, y,-1);
+	}
+
+	public static BufferedImage converterMatBufferedImage(Mat mat) {
+		int type = 0;
+		if (mat.channels() == 1) {
+			type = BufferedImage.TYPE_BYTE_GRAY;
+		} else if (mat.channels() == 3) {
+			type = BufferedImage.TYPE_3BYTE_BGR;
+		} else {
+			return null;
+		}
+
+		BufferedImage image = new BufferedImage(mat.width(), mat.height(), type);
+		WritableRaster raster = image.getRaster();
+		DataBufferByte dataBuffer = (DataBufferByte) raster.getDataBuffer();
+		byte[] data = dataBuffer.getData();
+		mat.get(0, 0, data);
+
+		return image;
+	}
+
 }
