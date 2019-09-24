@@ -13,17 +13,16 @@ class github:
         self.keybindings = {chr(27): exit}
         glutInit()
         glutInitWindowSize(self.w, self.h)
-        glutCreateWindow('Github')
+        self.git = glutCreateWindow('Github')
         glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH)
         glClearColor(0, 0, 0, 0)
         glutReshapeFunc(self.reshape)
         glutKeyboardFunc(self.keyboard)
         glutDisplayFunc(self.display)
-        glutIdleFunc(self.display)
+        # glutIdleFunc(self.display)
         glutMouseFunc(self.mouse)
-        glShadeModel(GL_FLAT)
-        glutInit()
-        self.controlPoints = ((0, 0, 0),( 0.03,0.1, 0), (0.07,0.1,0), (0.1,0.0, 0))
+        glOrtho(0.0, self.w, 0.0, self.h, 0.0, 1.0)
+        self.controlPoints = ((100,100, 0),( 130,200, 0), (170,200,0), (200,100, 0))
         glClearColor(0, 0, 0, 0)
         glShadeModel(GL_FLAT)
         glMap1f(GL_MAP1_VERTEX_3, 1, 0, self.controlPoints)
@@ -57,7 +56,6 @@ class github:
         glEnd()
 
     def teste_bezier(self):
-        glClear(GL_COLOR_BUFFER_BIT)
         glColor3f(1, 1, 1)
         glBegin(GL_LINE_STRIP)
         for i in range(32):
@@ -70,34 +68,24 @@ class github:
         for point in self.controlPoints:
         	glVertex3fv(point)
         glEnd()
-        glFlush()
 
     def fundo_branco(self):
+        glColor3f(255, 255, 255)
         glBegin(GL_QUADS)  # Begin the sketch
         glVertex2f(0, 0)  # Coordinates for the bottom left point
-        glVertex2f(1, 0)  # Coordinates for the bottom right point
-        glVertex2f(1, 1)  # Coordinates for the top right point
-        glVertex2f(0, 1)  # Coordinates for the top left point
+        glVertex2f(self.w, 0)  # Coordinates for the bottom right point
+        glVertex2f(self.w, self.h)  # Coordinates for the top right point
+        glVertex2f(0, self.h)  # Coordinates for the top left point
         glEnd()  # Mark the end of drawing
-        glFlush()
 
     def display(self):
-        self.teste_bezier()
         # self.fundo_branco()
+        self.teste_bezier()
+        glFlush()
 
 
     def inicializa(self):
         self.pontos['fundo_preto'] = (int(self.w/2),int(self.h/2)) # adiciona o fundo preto 
-
-    def square(self,x, y, width, height):
-        # We have to declare the points in this sequence: bottom left, bottom right, top right, top left
-        glBegin(GL_QUADS)  # Begin the sketch
-        glVertex2f(x, y)  # Coordinates for the bottom left point
-        glVertex2f(x+width, y)  # Coordinates for the bottom right point
-        glVertex2f(x+width, y+height)  # Coordinates for the top right point
-        glVertex2f(x, y+height)  # Coordinates for the top left point
-        glEnd()  # Mark the end of drawing
-        glFlush()
 
 if __name__ == '__main__':
     git = github()

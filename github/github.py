@@ -1,6 +1,7 @@
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
+import math
 
 
 class github:
@@ -13,29 +14,29 @@ class github:
         self.keybindings = {chr(27): exit}
         glutInit()
         glutInitWindowSize(self.w, self.h)
-        glutCreateWindow('Github')
+        self.git = glutCreateWindow('Github')
         glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH)
         glClearColor(0, 0, 0, 0)
         glutReshapeFunc(self.reshape)
         glutKeyboardFunc(self.keyboard)
         glutDisplayFunc(self.display)
-        # glutIdleFunc(self.display)
+        glutIdleFunc(self.display)
         glutMouseFunc(self.mouse)
         glOrtho(0.0, self.w, 0.0, self.h, 0.0, 1.0)
         self.controlPoints = ((100,100, 0),( 130,200, 0), (170,200,0), (200,100, 0))
         glClearColor(0, 0, 0, 0)
         glShadeModel(GL_FLAT)
-        glMap1f(GL_MAP1_VERTEX_3, 100, 0, self.controlPoints)
+        glMap1f(GL_MAP1_VERTEX_3, 1, 0, self.controlPoints)
         glEnable(GL_MAP1_VERTEX_3)
 
     
     
     def keyboard(self,arg,arg1,arg2):
-
-        print(arg.decode('utf8'),sep='\n\n')
-        print(arg1)
-        # print(arg,arg1,arg2,sep="\n",end="\n------\n")   
-        pass
+        letra = arg.decode('utf8')
+        if letra == '+':
+            self.pontos['raio_fundo_preto'] += 10
+        elif letra=='-':
+            self.pontos['raio_fundo_preto'] -= 10
     
     
     def reshape(self,rsp1,rsp2):
@@ -45,30 +46,32 @@ class github:
         print('\n',tp1,tp2,tp3,tp4,sep="-----",end="\n")
         
 
-    def circle(posx, posy, radius):
+    def circle(self,posx, posy, radius):
         sides = 32
+        cos = math.cos
+        pi = math.pi
+        sin = math.sin
         # radius = 0.85*w
+        glColor3f(0, 0, 0)
         glBegin(GL_POLYGON)
-        for i in range(100):
+        for i in range(200):
             cosine = radius * cos(i*2*pi/sides) + posx
             sine = radius * sin(i*2*pi/sides) + posy
             glVertex2f(cosine, sine)
         glEnd()
 
-    def teste_bezier(self):
-        glColor3f(255, 255,255)
+    def teste_bezier(self,*pontos):
+        glColor3f(0, 0, 0)
         glBegin(GL_LINE_STRIP)
         for i in range(32):
             glEvalCoord1f(float(i)/31)
-            print(float(i)/31)
         glEnd()
         glPointSize(5)
-        glColor3f(0, 0,0)
+        glColor3f(1, 1, 0)
         glBegin(GL_POINTS)
         for point in self.controlPoints:
         	glVertex3fv(point)
         glEnd()
-        
 
     def fundo_branco(self):
         glColor3f(255, 255, 255)
@@ -78,14 +81,19 @@ class github:
         glVertex2f(self.w, self.h)  # Coordinates for the top right point
         glVertex2f(0, self.h)  # Coordinates for the top left point
         glEnd()  # Mark the end of drawing
-        
+
     def display(self):
-        # self.fundo_branco()
-        self.teste_bezier()
+        self.fundo_branco()
+        self.circle(*self.pontos['fundo_preto'],self.pontos['raio_fundo_preto'])
+        self.cabeca(*self.pontos['cabeca'],self.pontos['raio_cabeca'])
+        self.teste_bezier(*self.pontos['bezier'])
         glFlush()
+
 
     def inicializa(self):
         self.pontos['fundo_preto'] = (int(self.w/2),int(self.h/2)) # adiciona o fundo preto 
+        self.pontos['raio_fundo_preto'] = int(300)
+        self.pontos['bezier'] = ((100,100, 0),( 130,200, 0), (170,200,0), (200,100, 0))
 
 
 if __name__ == '__main__':
