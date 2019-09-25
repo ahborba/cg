@@ -3,6 +3,11 @@ from OpenGL.GLU import *
 from OpenGL.GLUT import *
 import math
 
+cos = math.cos
+pi = math.pi
+sin = math.sin
+
+
 
 class github:
 
@@ -11,6 +16,7 @@ class github:
         self.pontos = {}
         self.w = 1024
         self.h = 1024
+        self.sides = 50
         self.keybindings = {chr(27): exit}
         glutInit()
         glutInitWindowSize(self.w, self.h)
@@ -39,24 +45,30 @@ class github:
             self.pontos['raio_fundo_preto'] -= 10
     
     
+    
     def reshape(self,rsp1,rsp2):
         pass
 
     def mouse(self,tp1,tp2,tp3,tp4):
         print('\n',tp1,tp2,tp3,tp4,sep="-----",end="\n")
-        
 
-    def circle(self,posx, posy, radius):
-        sides = 32
-        cos = math.cos
-        pi = math.pi
-        sin = math.sin
-        # radius = 0.85*w
+
+    def cabeca(self,x,y,a,b):
+        d2r = pi/180.0
+        glColor(255,255,255)
+        glBegin(GL_POLYGON)
+        for i in range(0,360):
+            rad = i*d2r
+            glVertex2f(cos(rad)*a+ x,sin(rad)*b + y)
+        glEnd()
+
+    def circle(self,x, y, raio):
+        # raio = 0.85*w
         glColor3f(0, 0, 0)
         glBegin(GL_POLYGON)
-        for i in range(200):
-            cosine = radius * cos(i*2*pi/sides) + posx
-            sine = radius * sin(i*2*pi/sides) + posy
+        for i in range(100):
+            cosine = raio * cos(i*2*pi/self.sides) + x
+            sine = raio * sin(i*2*pi/self.sides) + y
             glVertex2f(cosine, sine)
         glEnd()
 
@@ -81,12 +93,17 @@ class github:
         glVertex2f(self.w, self.h)  # Coordinates for the top right point
         glVertex2f(0, self.h)  # Coordinates for the top left point
         glEnd()  # Mark the end of drawing
+    
+
 
     def display(self):
+        # fundo branco
         self.fundo_branco()
+        # fundo preto
         self.circle(*self.pontos['fundo_preto'],self.pontos['raio_fundo_preto'])
-        self.cabeca(*self.pontos['cabeca'],self.pontos['raio_cabeca'])
+        self.cabeca(*self.pontos['cabeca'],*self.pontos['raios_cabeca'])
         self.teste_bezier(*self.pontos['bezier'])
+        
         glFlush()
 
 
@@ -94,6 +111,8 @@ class github:
         self.pontos['fundo_preto'] = (int(self.w/2),int(self.h/2)) # adiciona o fundo preto 
         self.pontos['raio_fundo_preto'] = int(300)
         self.pontos['bezier'] = ((100,100, 0),( 130,200, 0), (170,200,0), (200,100, 0))
+        self.pontos['cabeca'] = (int(self.w/2),int(self.h/2)+30)
+        self.pontos['raios_cabeca'] = (160,130)
 
 
 if __name__ == '__main__':
