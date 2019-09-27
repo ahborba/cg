@@ -2,9 +2,9 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 import math
-ctrl_points = [[[-1.5, -1.5, 4.0], [-0.5, -1.5, 2.0], [0.5, -1.5, -1.0],[1.5, -1.5, 2.0]], [[-1.5, -0.5, 1.0],[-0.5, -0.5, 3.0], [0.5, -0.5, 0.0],[1.5, -0.5, -1.0]], [[-1.5, 0.5, 4.0],[-0.5, 0.5, 0.0], [0.5, 0.5, 3.0],[1.5, 0.5, 4.0]], [[-1.5, 1.5, -2.0],[-0.5, 1.5, -2.0], [0.5, 1.5, 0.0],[1.5, 1.5, -1.0]]]
+import matplotlib.pyplot as plt,numpy as np, math
 
-
+ctrl_points = [    [        [-1.3, -1.5, 0 ] , [-0.5, -1.7, 0] , [0.5, -1.7, 0] , [1.3, -1.5 , 0]        ],    [        [-2.3, -0.5, 0 ] , [-0.5, -0.5, 0] , [0.5, -0.5, 0] , [2.3, -0.5 , 0]        ],    [        [-2.3,  0.5, 0 ] , [-0.5,  0.5, 0] , [0.5,  0.5, 0] , [2.3,  0.5 , 0]        ],    [        [-1.3,  1.5, 0 ] , [-0.5,  1.7, 0] , [0.5,  1.7, 0] , [1.3,  1.5 , 0]        ]]
 def reshape(w,h):
     glViewport(0, 0,  w, h)
     glMatrixMode(GL_PROJECTION)
@@ -17,24 +17,35 @@ def reshape(w,h):
     glLoadIdentity()
 
 
+def mat():
+    glPointSize(5)
+    glColor3f(1, 1, 0)
+    glBegin(GL_POINTS)
+    for lista in ctrl_points:
+        for ponto in lista:
+            glVertex3fv(ponto)
+    glEnd()
+
+
+
+
 def display():
+    glClearColor(0.0,0.0,0.0,0.0)
+    glMap2d(GL_MAP2_VERTEX_3,0, 1, 1, 0,ctrl_points)
+    glEnable(GL_MAP2_VERTEX_3)
+    glEnable(GL_AUTO_NORMAL)
+    glMapGrid2f(20, 0.0, 1.0, 20, 0.0, 1.0)
+    glShadeModel(GL_FLAT)
     glPushMatrix()
-    glRotatef(85.0,1.0,1.0,1.0)
+    # glRotatef(85.0,1.0,1.0,1.0)
     glEvalMesh2(GL_FILL,0,20,0,20)
     glPopMatrix()
+    mat()
     glFlush()
 
 
 
-def init():
-    glClearColor(0.0,0.0,0.0,0.0)
-    glEnable(GL_DEPTH_TEST)
-    glMap2f(GL_MAP2_VERTEX_3,0, 1, 0, 4,ctrl_points)
-    glEnable(GL_MAP2_VERTEX_3)
-    glEnable(GL_AUTO_NORMAL);
-    glMapGrid2f(20, 0.0, 1.0, 20, 0.0, 1.0)
-    glEnable(GL_DEPTH_TEST)
-    glShadeModel(GL_FLAT)
+    
 
 
 
@@ -45,7 +56,6 @@ def main():
     glutInitWindowSize(500,500)
     glutInitWindowPosition(100,100)
     glutCreateWindow('testando...')
-    init()
     glutDisplayFunc(display)
     glutReshapeFunc(reshape)
     glutMainLoop()

@@ -64,6 +64,20 @@ void init(void)
    glShadeModel(GL_FLAT);
 }
 
+
+
+void init(void)
+{
+   glClearColor(0.0, 0.0, 0.0, 0.0);
+   glEnable(GL_DEPTH_TEST);
+   glMap2f(GL_MAP2_VERTEX_3, 0, 1, 3, 4,
+           0, 1, 12, 4, &ctrlpoints[0][0][0]);
+   glEnable(GL_MAP2_VERTEX_3);
+   glEnable(GL_AUTO_NORMAL);
+   glMapGrid2f(20, 0.0, 1.0, 20, 0.0, 1.0);
+   initlights();
+}
+
 int main(int argc, char** argv)
 {
    glutInit(&argc, argv);

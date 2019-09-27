@@ -29,11 +29,9 @@ class github:
         glutIdleFunc(self.display)
         glutMouseFunc(self.mouse)
         glOrtho(0.0, self.w, 0.0, self.h, 0.0, 1.0)
-        self.ctrlPoints = [[100,100,0],[130,200,0],[170,200,0],[200,100,0]]
-        glClearColor(0, 0, 0, 0)
-        glShadeModel(GL_FLAT)
-        glMap1f(GL_MAP1_VERTEX_3, 1, 0, self.ctrlPoints)
-        glEnable(GL_MAP1_VERTEX_3)
+        self.ultimo = 0
+        self.ctrlPoints = [[100,100,0],[200,100,0]]
+       
 
     
     
@@ -43,44 +41,40 @@ class github:
             self.pontos['raio_fundo_preto'] += 10
         elif letra=='-':
             self.pontos['raio_fundo_preto'] -= 10
+        elif letra=='q':
+            self.ctrlPoints = [[100,100,0],[200,100,0]]
     
     
     
     def reshape(self,rsp1,rsp2):
         pass
 
-    def mouse(self,tp1,tp2,tp3,tp4):
-        print('\n',tp1,tp2,tp3,tp4,sep="-----",end="\n")
+    def mouse(self,tp1,tp2,x,y):
+        if tp2 ==1:
+            p = []
+            p.append(x)
+            y = self.h - y
+            p.append(y)
+            p.append(0)
+            self.ctrlPoints.insert(len(self.ctrlPoints)-1,p)
+            print(self.ctrlPoints)
+        self.ultimo +=1
 
 
-    def cabeca(self,x1,y1,x2,y2):
-        glColor3f(255, 255, 0)
-        glBegin(GL_QUADS)  # Begin the sketch
-        glVertex2f(x1, y1)  # Coordinates for the bottom left point
-        glVertex2f(x2,y1)  # Coordinates for the bottom right point
-        glVertex2f(x2, y2)  # Coordinates for the top right point
-        glVertex2f(x1, y2)  # Coordinates for the top left point
-        glEnd()  # Mark the end of drawing
-
-    def circle(self,x, y, raio):
-        # raio = 0.85*w
-        glColor3f(0, 0, 0)
-        glBegin(GL_POLYGON)
-        for i in range(100):
-            cosine = raio * cos(i*2*pi/self.sides) + x
-            sine = raio * sin(i*2*pi/self.sides) + y
-            glVertex2f(cosine, sine)
-        glEnd()
 
     def teste_bezier(self,*pontos):
+        glClearColor(0, 0, 0, 0)
+        glShadeModel(GL_FLAT)
+        glMap1f(GL_MAP1_VERTEX_3, 1, 0, self.ctrlPoints)
+        glEnable(GL_MAP1_VERTEX_3)
         glColor3f(0, 0, 0)
         glBegin(GL_LINE_STRIP)
         for i in range(32):
-            print(glEvalCoord1f(float(i)/31))
+            glEvalCoord1f(float(i)/31)
         glEnd()
 
         glPointSize(5)
-        glColor3f(1, 1, 0)
+        glColor3f(1, 0, 0)
         glBegin(GL_POINTS)
         for point in self.ctrlPoints:
         	glVertex3fv(point)
@@ -101,7 +95,7 @@ class github:
         # fundo branco
         self.fundo_branco()
         # fundo preto
-        self.circle(*self.pontos['fundo_preto'],self.pontos['raio_fundo_preto'])
+        # self.circle(*self.pontos['fundo_preto'],self.pontos['raio_fundo_preto'])
         # self.cabeca(*self.pontos['cabeca'])
         self.teste_bezier(*self.pontos['bezier'])
         
