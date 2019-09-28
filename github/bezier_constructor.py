@@ -30,7 +30,7 @@ class github:
         glutMouseFunc(self.mouse)
         glOrtho(0.0, self.w, 0.0, self.h, 0.0, 1.0)
         self.ultimo = 0
-        self.ctrlPoints = [[100,100,0],[200,100,0]]
+        self.ctrlPoints = [[512,512,0],[512,712,0]]
        
 
     
@@ -42,7 +42,9 @@ class github:
         elif letra=='-':
             self.pontos['raio_fundo_preto'] -= 10
         elif letra=='q':
-            self.ctrlPoints = [[100,100,0],[200,100,0]]
+            self.ctrlPoints =[[512,512,0],[512,712,0]]
+        elif letra == 't':
+            self.ctrlPoints.remove(1)
     
     
     
@@ -56,7 +58,7 @@ class github:
             y = self.h - y
             p.append(y)
             p.append(0)
-            self.ctrlPoints.insert(len(self.ctrlPoints)-1,p)
+            self.ctrlPoints.insert(len(self.ctrlPoints),p)
             print(self.ctrlPoints)
         self.ultimo +=1
 
