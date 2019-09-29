@@ -2,7 +2,7 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 import math
-import transformacao
+from transformacao import *
 
 cos = math.cos
 pi = math.pi
@@ -29,7 +29,7 @@ class github:
         glutDisplayFunc(self.display)
         glutIdleFunc(self.display)
         glutMouseFunc(self.mouse)
-        glOrtho(0.0, self.w, 0.0, self.h, 0.0, 1.0)
+        # glOrtho(0.0, self.w, 0.0, self.h, 0.0, 1.0)
         self.ctrlPoints = [[100,100,0],[130,200,0],[170,200,0],[200,100,0]]
         glClearColor(0, 0, 0, 0)
         glShadeModel(GL_FLAT)
@@ -37,33 +37,90 @@ class github:
         glEnable(GL_MAP1_VERTEX_3)
         self.indice=0
         self.linha=0
+        self.rotacao = False
         self.teste ,self.print= False,False
         self.operacao = 'orelha_direita'
+        self.alpha = 0
+        self.transf = Transformacao(self.w,self.h)
+
+    def transformacao_rotacao(self):
+        self.transformacao('rotacao')
+        
 
 
-    
-    
+    def transformacao_centro(self,op,mat,dx=0,dy=0):
+        if op =='translacao':
+            mat = self.transf.translacao(mat,dx,dy)
+        elif op =='escala':
+            mat  =self.transf.escala(mat,dx,dy,mat[0][0],mat[0][1])
+        elif op == 'rotacao':
+            mat = self.transf.rotacao(mat,mat[0][0],mat[0][1])
+        return mat
+
+    def transformacao_bezier(self,op,mat,dx,dy,dados):
+        if op =='rotacao' or op=='escala':
+            dX = self.pontos['fundo_preto'][0][0] 
+            dY = self.pontos['fundo_preto'][0][1]
+
+        nova_mat = []
+        for linha in mat:
+            if op =='translacao':
+                nova_mat.append(self.transf.translacao(linha,dx,dy))
+            elif op =='escala':
+                nova_mat.append(self.transf.escala(linha,dx,dy,dX,dY))
+            elif op =='rotacao':
+                nova_mat.append(self.transf.rotacao(linha,dX,dY))
+        return nova_mat
+
+
+    def transformacao(self,op,dx=0,dy=0):
+        self.pontos['cabeca'] = self.transformacao_bezier(op,self.pontos['cabeca'] ,dx,dy,'cabeca')
+        self.pontos['orelha_esquerda'] = self.transformacao_bezier(op,self.pontos['orelha_esquerda'] ,dx,dy,'orelha_esquerda')
+        self.pontos['orelha_direita'] = self.transformacao_bezier(op,self.pontos['orelha_direita'] ,dx,dy,'orelha_direita')
+        self.pontos['braco'] = self.transformacao_bezier(op,self.pontos['braco'] ,dx,dy,'braco')
+        self.pontos['pescoco'] = self.transformacao_bezier(op,self.pontos['pescoco'] ,dx,dy,'pescoco')
+        self.pontos['fundo_preto'] =  self.transformacao_centro(op,self.pontos['fundo_preto'],dx,dy)
+
+
     def keyboard(self,arg,arg1,arg2):
         letra = arg.decode('utf8')
-        if letra=='r':
-            self.pontos[self.operacao] =[[[573, 668, 0], [602, 681, 0], [674, 710, 0], [661, 722, 0], [691, 647, 0], [663, 618, 0]], [[564, 664, 0], [650, 618, 0], [618, 630, 0], [593, 647, 0], [573, 655, 0], [663, 621, 0]]]
-        elif letra =='p':
-            print('\n',self.pontos[self.operacao])
-        elif letra =='c':
-            if self.teste:
-                self.teste = False
+        dx = 0
+        dy = 0
+        translacao = False
+        escala = False
+        if letra=='d':
+            dx, translacao = 0.1, True
+        elif letra =='a':
+            dx, translacao = -.1, True
+        elif letra =='w':
+            dy, translacao = .1, True
+        elif letra == 's':
+            dy, translacao = -.1, True
+        
+        if letra =='+':
+            dx,dy,escala=1.1,1.1,True
+        elif letra =='-':
+            dx,dy,escala=.9,.9,True
+        elif letra =='q':
+            self.inicializa()      
+        elif letra == 'r':
+            if self.rotacao:
+                self.rotacao = False
             else:
-                self.teste=True
-        elif letra=='q':
+                self.rotacao = True
+        elif letra =='e':
             if self.print:
                 self.print = False
             else:
-                self.print=True
-        elif letra=='t':
-            self.operacao = input('self.operacao: ')
-            print('escolhido: ',self.operacao)
-    
-    
+                self.print = True
+
+
+        if translacao:
+            self.transformacao('translacao',dx,dy)
+        elif escala:
+            self.transformacao('escala',dx,dy)
+
+
     def reshape(self,rsp1,rsp2):
         pass
 
@@ -99,14 +156,25 @@ class github:
 
 
 
-    def circle(self,x, y, raio):
-        # raio = 0.85*w
+    def circle(self,circulo):
+        x = circulo[0][0]
+        y = circulo[0][1]
+        x1 = circulo[1][0]
+        y1 = circulo[1][1]
+        raio = sqrt(((x-x1)**2)+((y-y1)**2) )
         glColor3f(0, 0, 0)
         glBegin(GL_POLYGON)
         for i in range(100):
             cosine = raio * cos(i*2*pi/self.sides) + x
             sine = raio * sin(i*2*pi/self.sides) + y
             glVertex2f(cosine, sine)
+        glEnd()
+        glPointSize(10)
+        glBegin(GL_POINTS)
+        glColor3f(255, 0,0)
+        glColor(255,255,0)
+        glVertex3fv(circulo[0])
+        glVertex3fv(circulo[1])
         glEnd()
 
     def bezier(self,pontos,tipo):
@@ -121,7 +189,7 @@ class github:
         # glRotatef(85.0,1.0,1.0,1.0)
         glEvalMesh2(GL_FILL,0,20,0,20)
         glPopMatrix()
-        if tipo ==self.operacao and self.print:
+        if self.print:
             glPointSize(5)
             glBegin(GL_POINTS)
             glColor3f(255, 0,0)
@@ -142,10 +210,10 @@ class github:
     def fundo_branco(self):
         glColor3f(255, 255, 255)
         glBegin(GL_QUADS)  # Begin the sketch
-        glVertex2f(0, 0)  # Coordinates for the bottom left point
-        glVertex2f(self.w, 0)  # Coordinates for the bottom right point
-        glVertex2f(self.w, self.h)  # Coordinates for the top right point
-        glVertex2f(0, self.h)  # Coordinates for the top left point
+        glVertex2f(-self.w, self.h)  # Coordinates for the bottom left point
+        glVertex2f(self.w, self.h)  # Coordinates for the bottom right point
+        glVertex2f(self.w, -self.h)  # Coordinates for the top right point
+        glVertex2f(-self.w,-self.h)  # Coordinates for the top left point
         glEnd()  # Mark the end of drawing
     
 
@@ -154,26 +222,26 @@ class github:
         # fundo branco
         self.fundo_branco()
         # fundo preto
-        self.circle(*self.pontos['fundo_preto'],self.pontos['raio_fundo_preto'])
+        self.circle(self.pontos['fundo_preto'])
         self.bezier(self.pontos['cabeca'],'cabeca')
         self.bezier(self.pontos['orelha_esquerda'],'orelha_esquerda')
         self.bezier(self.pontos['orelha_direita'],'orelha_direita')
         self.bezier(self.pontos['braco'],'braco')
         self.bezier(self.pontos['pescoco'],'pescoco')
+        if self.rotacao:
+            self.transformacao_rotacao()
         # self.teste_bezier(*self.pontos['bezier'])
-        
         glFlush()
 
 
     def inicializa(self):
-        self.pontos['fundo_preto'] = (int(self.w/2),int(self.h/2)) # adiciona o fundo preto 
-        self.pontos['raio_fundo_preto'] = int(300)
-        self.pontos['bezier'] = ((100,100, 0),( 130,200, 0), (170,200,0), (200,100, 0))
-        self.pontos['cabeca'] =  [[[357, 636, 0], [428, 700, 0], [559, 698, 0], [631, 663, 0], [664, 627, 0]], [[312, 593, 0], [533, 597, 0], [438, 572, 0], [613, 587, 0], [702, 576, 0]], [[305, 515, 0], [450, 529, 0], [535, 496, 0], [622, 481, 0], [703, 508, 0]], [[337, 445, 0], [390, 377, 0], [541, 366, 0], [631, 394, 0], [676, 457, 0]]]
-        self.pontos['orelha_esquerda'] =  [[[334, 647, 0], [339, 679, 0], [328, 735, 0], [380, 691, 0], [416, 665, 0], [442, 655, 0]], [[334, 601, 0], [367, 644, 0], [369, 644, 0], [391, 662, 0], [414, 662, 0], [442, 669, 0]], [[352, 611, 0], [375, 615, 0], [398, 623, 0], [418, 638, 0], [431, 644, 0], [451, 644, 0]]]
-        self.pontos['orelha_direita'] = [[[589, 668, 0], [592, 701, 0], [709, 677, 0], [630, 760, 0], [691, 647, 0], [663, 618, 0]], [[564, 664, 0], [650, 618, 0], [618, 630, 0], [593, 647, 0], [573, 655, 0], [663, 621, 0]]]
-        self.pontos['braco'] = [[[430, 350, 0], [380, 319, 0], [346, 355, 0], [327, 389, 0], [306, 408, 0], [275, 403, 0]], [[425, 306, 0], [398, 309, 0], [350, 287, 0], [342, 324, 0], [306, 357, 0], [324, 351, 0]]]
-        self.pontos['pescoco'] = [[[373, 232, 0], [417, 223, 0], [426, 244, 0], [436, 234, 0], [404, 358, 0], [452, 401, 0]], [[474, 223, 0], [479, 263, 0], [481, 306, 0], [483, 341, 0], [485, 366, 0], [486, 392, 0]], [[547, 151, 0], [544, 278, 0], [543, 305, 0], [543, 335, 0], [545, 371, 0], [541, 392, 0]], [[611, 225, 0], [576, 233, 0], [574, 230, 0], [580, 225, 0], [596, 369, 0], [545, 395, 0]]]
+        self.pontos['fundo_preto'] = [[0,0,0],[0.590,0,0]] # adiciona o fundo preto
+        self.pontos['cabeca']= [[[-0.302734375, 0.2421875, 0], [-0.1640625, 0.3671875, 0], [0.091796875, 0.36328125, 0], [0.232421875, 0.294921875, 0], [0.296875, 0.224609375, 0]], [[-0.390625, 0.158203125, 0], [0.041015625, 0.166015625, 0], [-0.14453125, 0.1171875, 0], [0.197265625, 0.146484375, 0], [0.37109375, 0.125, 0]], [[-0.404296875, 0.005859375, 0], [-0.12109375, 0.033203125, 0], [0.044921875, -0.03125, 0], [0.21484375, -0.060546875, 0], [0.373046875, -0.0078125, 0]], [[-0.341796875, -0.130859375, 0], [-0.23828125, -0.263671875, 0], [0.056640625, -0.28515625, 0], [0.232421875, -0.23046875, 0], [0.3203125, -0.107421875, 0]]]
+        self.pontos['orelha_esquerda']= [[[-0.34765625, 0.263671875, 0], [-0.337890625, 0.326171875, 0], [-0.359375, 0.435546875, 0], [-0.2578125, 0.349609375, 0], [-0.1875, 0.298828125, 0], [-0.13671875, 0.279296875, 0]], [[-0.34765625, 0.173828125, 0], [-0.283203125, 0.2578125, 0], [-0.279296875, 0.2578125, 0], [-0.236328125, 0.29296875, 0], [-0.19140625, 0.29296875, 0], [-0.13671875, 0.306640625, 0]], [[-0.3125, 0.193359375, 0], [-0.267578125, 0.201171875, 0], [-0.22265625, 0.216796875, 0], [-0.18359375, 0.24609375, 0], [-0.158203125, 0.2578125, 0], [-0.119140625, 0.2578125, 0]]]
+        self.pontos['orelha_direita']= [[[0.150390625, 0.3046875, 0], [0.15625, 0.369140625, 0], [0.384765625, 0.322265625, 0], [0.23046875, 0.484375, 0], [0.349609375, 0.263671875, 0], [0.294921875, 0.20703125, 0]], [[0.1015625, 0.296875, 0], [0.26953125, 0.20703125, 0], [0.20703125, 0.23046875, 0], [0.158203125, 0.263671875, 0], [0.119140625, 0.279296875, 0], [0.294921875, 0.212890625, 0]]]
+        self.pontos['braco']= [[[-0.16015625, -0.31640625, 0], [-0.2578125, -0.376953125, 0], [-0.32421875, -0.306640625, 0], [-0.361328125, -0.240234375, 0], [-0.40234375, -0.203125, 0], [-0.462890625, -0.212890625, 0]], [[-0.169921875, -0.40234375, 0], [-0.22265625, -0.396484375, 0], [-0.31640625, -0.439453125, 0], [-0.33203125, -0.3671875, 0], [-0.40234375, -0.302734375, 0], [-0.3671875, -0.314453125, 0]]]
+        self.pontos['pescoco']= [[[-0.271484375, -0.546875, 0], [-0.185546875, -0.564453125, 0], [-0.16796875, -0.5234375, 0], [-0.1484375, -0.54296875, 0], [-0.2109375, -0.30078125, 0], [-0.1171875, -0.216796875, 0]], [[-0.07421875, -0.564453125, 0], [-0.064453125, -0.486328125, 0], [-0.060546875, -0.40234375, 0], [-0.056640625, -0.333984375, 0], [-0.052734375, -0.28515625, 0], [-0.05078125, -0.234375, 0]], [[0.068359375, -0.705078125, 0], [0.0625, -0.45703125, 0], [0.060546875, -0.404296875, 0], [0.060546875, -0.345703125, 0], [0.064453125, -0.275390625, 0], [0.056640625, -0.234375, 0]], [[0.193359375, -0.560546875, 0], [0.125, -0.544921875, 0], [0.12109375, -0.55078125, 0], [0.1328125, -0.560546875, 0], [0.1640625, -0.279296875, 0], [0.064453125, -0.228515625, 0]]]
+
 if __name__ == '__main__':
     git = github()
     git.inicializa()

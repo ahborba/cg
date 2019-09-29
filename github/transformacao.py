@@ -1,40 +1,52 @@
-from imagem import Imagem
 import math
 import numpy as np
 import cv2
 
 
 class Transformacao:
-    def __init__(self):
+    def __init__(self,h,w):
+        self.h = int(h/2)
+        self.w = int(w/2)
         self.mat_escala = [[],[],[]]
         self.mat_translacao = [[],[],[]]
 
-    def rotacao(self,linhas,alpha):
+
+
+    def rotacao(self,linhas,dx,dy,alpha=1):
+        # print('1',linhas)
+        linhas = self.translacao(linhas,-dx,-dy)
         mat_rotacao = np.array([[np.cos(np.deg2rad(alpha)),np.sin(np.deg2rad(alpha)),0],[-np.sin(np.deg2rad(alpha)),np.cos(np.deg2rad(alpha)),0],[0,0,1]])
-        return self.multiplicar_matriz(linhas,mat_rotacao)
+        # # print('1.5',linhas)
+        linhas = self.multiplicar_matriz(linhas,mat_rotacao)
+        linhas = self.translacao(linhas,dx,dy)
+        # print('2',linhas)
+        # input()
+        return linhas
 
     def translacao(self,linhas,dx,dy):
         mat_translacao = np.array([[1,0,0],[0,1,0],[dx,dy,1]])
         return self.multiplicar_matriz(linhas,mat_translacao)
-    def escala(self,linhas,dx,dy):
+
+    def escala(self,linhas,dx,dy,dX,dY):
+        linhas = self.translacao(linhas,-dX,-dY)
         mat_escala = np.array([[dx,0,0],[0,dy,0],[0,0,1]])
-        return self.multiplicar_matriz(linhas,mat_escala)
+        linhas = self.multiplicar_matriz(linhas,mat_escala)
+        linhas = self.translacao(linhas,dX,dY)
+        return linhas
+        
 
 
     def multiplicar_matriz(self,linhas,mat):
         linhas_antes = linhas[:]
-        linhas.clear()
-        lin0 = True
-        valor_antigo = None
+        retorno = []
         for linha in linhas_antes:
-            p0 = linha[0]
-            p1 = linha[1]
-            pt0 = np.array(list(p0))
-            pt1 = np.array(list(p1))
-            pt0 = pt0@mat
-            pt1 = pt1@mat
-            linhas.append((tuple(pt0.astype(int)),tuple(pt1.astype(int))))
-        return linhas
+            linha[2]=1
+            pt = np.array(linha)
+            pt = list(pt@mat)
+            pt[2] = 0 
+            retorno.append(list(pt))
+        
+        return retorno
 
 if __name__ == "__main__":
     print('Qual o tamanho de imagem desejado?')
