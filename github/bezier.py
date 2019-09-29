@@ -114,7 +114,6 @@ class github:
             else:
                 self.print = True
 
-
         if translacao:
             self.transformacao('translacao',dx,dy)
         elif escala:
@@ -125,32 +124,36 @@ class github:
         pass
 
     def substitui(self,tp2,x,y):
-        y = self.h-y
+
         if tp2==0:
             self.indice = 0
-            self.linha =0
-            menor = 1025
-            j=0
-            for pontos in self.pontos[self.operacao]:
+            menor = 102500000000000000
+            for ponto in self.pontos['g']:
                 i = 0
-                for ponto in pontos:
-                    px = ponto[0]
-                    py = ponto[1]
-                    euclidiana = sqrt((x-px)**2+(y-py)**2)
-                    if euclidiana < menor:
-                        self.indice = i
-                        self.linha=j
-                        menor = euclidiana
-                    i+=1
-                j+=1
+                # for ponto in pontos:
+                px = ponto[0]
+                py = ponto[1]
+                euclidiana = sqrt((x-px)**2+(y-py)**2)
+                if euclidiana < menor:
+                    self.indice = i
+                    menor = euclidiana
+                i+=1
         else:
-            self.pontos[self.operacao][self.linha][self.indice] = [x,y,0]
+            print(self.pontos['g'][self.indice])
+            print([x,y,0])
+            self.pontos['g'][self.indice] = [x,y,0]
+            print(self.pontos['g'][self.indice])
+            
 
     def mouse(self,tp1,tp2,x,y):
-        if self.teste:
-            self.substitui(tp2,x,y)
+        x /=1024
+        y /=1024 
+
+        self.substitui(tp2,x,y)
+        if tp2==0:
+            print('pressionou [',x,',',y,',',0,'],',sep='')
         elif tp2==1:
-            print('[',x,',',self.h-y,',',0,'],',sep='')
+            print('soltou [',x,',',y,',',0,'],',sep='')
         
 
 
@@ -169,7 +172,7 @@ class github:
             sine = raio * sin(i*2*pi/self.sides) + y
             glVertex2f(cosine, sine)
         glEnd()
-        glPointSize(10)
+        glPointSize(1)
         glBegin(GL_POINTS)
         glColor3f(255, 0,0)
         glColor(255,255,0)
@@ -180,7 +183,7 @@ class github:
     def bezier(self,pontos,tipo):
         glClearColor(0.0,0.0,0.0,0.0)
         glColor3f(255, 255, 255)
-        glMap2d(GL_MAP2_VERTEX_3,0, 1, 1, 0,pontos)
+        glMap2d(GL_MAP2_VERTEX_3,0, 1, 10, 0,pontos)
         glEnable(GL_MAP2_VERTEX_3)
         glEnable(GL_AUTO_NORMAL)
         glMapGrid2f(20, 0.0, 1.0, 20, 0.0, 1.0)
@@ -207,6 +210,21 @@ class github:
                 
             glEnd()
 
+    def g(self):
+        glPointSize(5)
+        glBegin(GL_POLYGON)
+        glColor3f(255, 0,0)
+        for ponto in self.pontos['g']:
+            glVertex3fv(ponto)
+            
+        glEnd()
+        glPointSize(5)
+        glBegin(GL_POINTS)
+        glColor3f(0, 255,0)
+        for ponto in self.pontos['g']:
+            glVertex3fv(ponto)
+        glEnd()
+
     def fundo_branco(self):
         glColor3f(255, 255, 255)
         glBegin(GL_QUADS)  # Begin the sketch
@@ -220,14 +238,16 @@ class github:
 
     def display(self):
         # fundo branco
-        self.fundo_branco()
+        # self.fundo_branco()
         # fundo preto
         self.circle(self.pontos['fundo_preto'])
-        self.bezier(self.pontos['cabeca'],'cabeca')
-        self.bezier(self.pontos['orelha_esquerda'],'orelha_esquerda')
-        self.bezier(self.pontos['orelha_direita'],'orelha_direita')
-        self.bezier(self.pontos['braco'],'braco')
-        self.bezier(self.pontos['pescoco'],'pescoco')
+        # self.bezier(self.pontos['cabeca'],'cabeca')
+        # self.bezier(self.pontos['orelha_esquerda'],'orelha_esquerda')
+        # self.bezier(self.pontos['orelha_direita'],'orelha_direita')
+        # self.bezier(self.pontos['braco'],'braco')
+        # self.bezier(self.pontos['pescoco'],'pescoco')
+        # self.bezier(self.pontos['g'],'g')
+        self.g()
         if self.rotacao:
             self.transformacao_rotacao()
         # self.teste_bezier(*self.pontos['bezier'])
@@ -241,7 +261,7 @@ class github:
         self.pontos['orelha_direita']= [[[0.150390625, 0.3046875, 0], [0.15625, 0.369140625, 0], [0.384765625, 0.322265625, 0], [0.23046875, 0.484375, 0], [0.349609375, 0.263671875, 0], [0.294921875, 0.20703125, 0]], [[0.1015625, 0.296875, 0], [0.26953125, 0.20703125, 0], [0.20703125, 0.23046875, 0], [0.158203125, 0.263671875, 0], [0.119140625, 0.279296875, 0], [0.294921875, 0.212890625, 0]]]
         self.pontos['braco']= [[[-0.16015625, -0.31640625, 0], [-0.2578125, -0.376953125, 0], [-0.32421875, -0.306640625, 0], [-0.361328125, -0.240234375, 0], [-0.40234375, -0.203125, 0], [-0.462890625, -0.212890625, 0]], [[-0.169921875, -0.40234375, 0], [-0.22265625, -0.396484375, 0], [-0.31640625, -0.439453125, 0], [-0.33203125, -0.3671875, 0], [-0.40234375, -0.302734375, 0], [-0.3671875, -0.314453125, 0]]]
         self.pontos['pescoco']= [[[-0.271484375, -0.546875, 0], [-0.185546875, -0.564453125, 0], [-0.16796875, -0.5234375, 0], [-0.1484375, -0.54296875, 0], [-0.2109375, -0.30078125, 0], [-0.1171875, -0.216796875, 0]], [[-0.07421875, -0.564453125, 0], [-0.064453125, -0.486328125, 0], [-0.060546875, -0.40234375, 0], [-0.056640625, -0.333984375, 0], [-0.052734375, -0.28515625, 0], [-0.05078125, -0.234375, 0]], [[0.068359375, -0.705078125, 0], [0.0625, -0.45703125, 0], [0.060546875, -0.404296875, 0], [0.060546875, -0.345703125, 0], [0.064453125, -0.275390625, 0], [0.056640625, -0.234375, 0]], [[0.193359375, -0.560546875, 0], [0.125, -0.544921875, 0], [0.12109375, -0.55078125, 0], [0.1328125, -0.560546875, 0], [0.1640625, -0.279296875, 0], [0.064453125, -0.228515625, 0]]]
-
+        self.pontos['g'] =[            [0.418, 0.8156, 0], [0.3628, 0.7708, 0], [0.354, 0.716, 0], [0.3644, 0.658, 0], [0.4592, 0.6152, 0],[0.4944, 0.6256, 0]    ,             [0.504, 0.676, 0],  [0.504, 0.72, 0], [0.466, 0.72, 0], [0.428, 0.72, 0],[0.428, 0.708, 0], [0.4376, 0.696, 0]    ,            [0.4596, 0.6936, 0],  [0.472, 0.672, 0], [0.4656, 0.6504, 0],[0.4196, 0.6544, 0], [0.4204, 0.778, 0], [0.4604, 0.7832, 0]    ,         [0.4876, 0.7816, 0], [0.4912, 0.7968, 0],[0.4952, 0.8116, 0], [0.4752, 0.8156, 0], [0.418, 0.8156, 0],[0.418, 0.8156, 0]]
 if __name__ == '__main__':
     git = github()
     git.inicializa()

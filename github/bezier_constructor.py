@@ -14,8 +14,8 @@ class github:
 
     def __init__(self):
         self.pontos = {}
-        self.w = 1024
-        self.h = 1024
+        self.w = 400
+        self.h = 400
         self.sides = 50
         self.keybindings = {chr(27): exit}
         glutInit()
@@ -30,7 +30,7 @@ class github:
         glutMouseFunc(self.mouse)
         glOrtho(0.0, self.w, 0.0, self.h, 0.0, 1.0)
         self.ultimo = 0
-        self.ctrlPoints = [[512,512,0],[512,712,0]]
+        self.ctrlPoints =  [[35.733333, 4.1009991, 0], [30.450499, 4.1838329000000005, 0], [21.86666632, 22.1009986, 0], [45.250499000000005, 1.2504996, 0], [21.333333, 46.767664599999996, 0], [69.383831, 4.717166199999999, 0], [30.799999399999997, 66.7676646, 0], [91.78383099999999, 36.317165599999996, 0]]
        
 
     
@@ -67,6 +67,9 @@ class github:
     def teste_bezier(self,*pontos):
         glClearColor(0, 0, 0, 0)
         glShadeModel(GL_FLAT)
+        # for ponto in self.ctrlPoints:
+        #     ponto[0]*=5
+        #     ponto[1]*=5
         glMap1f(GL_MAP1_VERTEX_3, 1, 0, self.ctrlPoints)
         glEnable(GL_MAP1_VERTEX_3)
         glColor3f(0, 0, 0)
@@ -100,7 +103,7 @@ class github:
         # self.circle(*self.pontos['fundo_preto'],self.pontos['raio_fundo_preto'])
         # self.cabeca(*self.pontos['cabeca'])
         self.teste_bezier(*self.pontos['bezier'])
-        
+        input()
         glFlush()
 
 
