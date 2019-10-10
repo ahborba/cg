@@ -1,5 +1,3 @@
-import itertools
-
 import numpy as np
 from glumpy import app, gl, glm, gloo
 
