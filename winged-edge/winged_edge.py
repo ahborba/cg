@@ -1,4 +1,5 @@
 import sys
+from sintetizar_poligono import *
 try:
     objeto = sys.argv[1]
 except:
@@ -70,6 +71,19 @@ def main():
     index_list = get_index_list()
     print(index_list)
     print(vertex_list)
+    # exit()
+    criar_obj(vertex_list,index_list)
+    # try:
+    #     while True:
+    #         txt = input('digite: ')
+    #         print('voce digitou: ',txt)
+    #         if txt == 'sair':
+    #             break
+    # except:
+    #     pass
+    print(index_list)
+    print(vertex_list)
+
 
 if __name__=="__main__":
     main()
