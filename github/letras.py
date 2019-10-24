@@ -160,7 +160,7 @@ class github:
 
     def display(self):
         self.letra('g')
-        self.i()
+        # self.i()
         self.letra_q('t')
         self.letra_q('h')
         self.letra('u')

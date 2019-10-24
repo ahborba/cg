@@ -1,7 +1,7 @@
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
-import math,os,random
+import math,os,random,numpy as np
 
 cos = math.cos
 pi = math.pi
@@ -10,25 +10,27 @@ sqrt = math.sqrt
 w = 500
 h = 500
 depth = 500
-d = 5
 fov = 0
-full = True
+full = False
+def normalize(v):
+    norm=np.linalg.norm(v, ord=1)
+    if norm==0:
+        norm=np.finfo(v.dtype).eps
+    return v/norm
+       
 class cidade:
+
+
 
     def __init__(self):
         self.pontos = {}
-        self.x = 0
-        self.y = 0
-        self.z = 250
-        self.axis_x= False
-        self.dir_x = 0
-        self.dir_y = 0
-        self.dir_z = 0
-        self.ang_x = 0
-        self.ang_y = 0
-        self.ang_z = 0
-        self.dx = 0
-        self.dy = 0
+        self.camera_position = np.array([0,0,250],dtype=np.float64)
+        self.camera_direction= np.array([0,0,249],dtype=np.float64)
+        self.camera_up = np.array([0,1,0])
+        self.last_x = int(w/2)
+        self.last_y = int(h/2)
+        self.yaw = self.last_x
+        self.pitch = self.last_y
         self.init_glut()
         self.teste, self.print = False, False
 
@@ -46,92 +48,70 @@ class cidade:
         glDepthFunc(GL_LEQUAL)
         glClearDepth(1.0)
         glMatrixMode(GL_PROJECTION)
-        glutSetCursor(GLUT_CURSOR_NONE)
+        # glutSetCursor(GLUT_CURSOR_NONE)
         glOrtho(-w, w, -h, h, -depth, depth)
         glClearColor(0, 0, 0, 0)
         glutMouseFunc(self.mouse)
         glutMotionFunc(self.motion)
-        glutSpecialFunc(self.special)
+        glutPassiveMotionFunc(self.motion)
         glutDisplayFunc(self.display)
         glutWarpPointer(int(w/2),int(h/2))
         glutKeyboardFunc(self.keyboard)
         
+        
 
     def keyboard(self, key, x, y):
         key = key.decode('utf8').lower()
-        direcao = False
+        speed = 0.1
         if key == chr(27):
-            os.system('clear')
+            # os.system('clear')
             sys.exit()
         elif key == 'w':
-            self.z -= d
+            self.camera_position += speed * self.camera_direction
         elif key == 'a':
-            self.x -= d
-            self.dir_x-=d
+            self.camera_position += np.cross(self.camera_direction,self.camera_up) * speed
+
         elif key == 's':
-            self.z += d
+            self.camera_position -= speed * self.camera_direction
         elif key == 'd':
-            self.x += d
-            self.dir_x +=d
-
-        self.camera(direcao)
-
-    def special(self, key, x, y):
-        d = 1
-        if key== GLUT_KEY_LEFT:
-            self.ang_y -= 0.05
-            self.dir_x = sin(self.ang_y)
-            self.dir_z = -cos(self.ang_y)
-        elif key == GLUT_KEY_RIGHT:
-            self.ang_y += 0.05
-            self.dir_x = sin(self.ang_y)
-            self.dir_z = -cos(self.ang_y)
-        elif key == GLUT_KEY_UP:
-            self.x += self.dir_x * d
-            self.z += self.dir_z * d
-            self.y += self.dir_y * d
-        elif key == GLUT_KEY_DOWN:
-            self.x -= self.dir_x * d
-            self.z -= self.dir_z * d
-            self.y -= self.dir_y * d
+            self.camera_position -= np.cross(self.camera_direction,self.camera_up) * speed    
+    
         self.camera()
 
+   
+
     def motion(self, x, y):
+        sensitivity = 0.1
         x = (w/2)-x
         y = (h/2)-y
-        # esquerda
-        if (x - self.dx) > 0 :
-            self.ang_y -= 0.01
-            self.dir_x = sin(self.ang_y)
-            self.dir_z = -cos(self.ang_y)
-        else:
-            # direita
-            self.ang_y += 0.01
-            self.dir_x = sin(self.ang_y)
-            self.dir_z = -cos(self.ang_y)
-        self.dx = x
-        self.dy = y
-        # self.camera(x, y,True)
+        dx = (x - self.last_x) * sensitivity
+        dy = (y - self.last_y) * sensitivity
+        self.last_x , self.last_y = x,y
+        self.yaw += dx
+        self.pitch +=dy
+        if self.yaw > 89:
+            self.yaw = 89
+        if self.pitch< -89:
+            self.pitch = -89
+        
+        self.camera_direction[0] = cos(np.radians(self.yaw)) * cos(np.radians(self.pitch))
+        self.camera_direction[1] = sin(np.radians(self.pitch))
+        self.camera_direction[2] = sin(np.radians(self.yaw)) * cos(np.radians(self.pitch))
+        self.camera_direction = normalize(self.camera_direction)
+        glutWarpPointer(int(w/2),int(h/2))
+        self.camera()
 
     def mouse(self, tp1, tp2, x, y):
         print("mouse_click: ", x, y, sep=" ", end="\n")
 
-    def camera(self, x=0, y=0,girar_camera=False):
-        if girar_camera:
-            self.dir_x = x
-            self.dir_y = y
+    def camera(self):
         glClear(GL_COLOR_BUFFER_BIT)
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
-        gluPerspective(0.5, 1080/720, 1, 100)
-        gluLookAt(self.x,0,self.z,self.dir_x,self.dir_y,self.z-0.1,0,1,0)
-        #            gluLookAt(self.x, self.y ,self.z,self.dir_x,self.dir_y,0 , 1, 0, 0)
-        # gluLookAt(self.x, self.y ,self.z,self.dir_x,self.dir_y,0 , 0, 1, 0)
+        gluPerspective(np.radians(45), 1080/720, 1, 100)
+        gluLookAt(*self.camera_position,*(self.camera_position+self.camera_direction),*self.camera_up)
         glutPostRedisplay()
-        os.system('clear')
-        print('camera:  ',self.x,self.y,self.z)
-        print('direcao:',self.dir_x,self.dir_y,self.dir_z)
-        # print('x: ', self.x, '\ny: ', self.y, '\nz: ', self.z,'\n\ndir x: ',self.dir_x,'\ndir y: ',self.dir_y,'\n\nfov: ',fov)
+        # os.system('clear')
 
 
 

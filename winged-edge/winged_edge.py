@@ -24,7 +24,7 @@ def read_vertex():
         del(el[0:3])
         vertex_dict['v'+str(cont)] = [posicao, el]
         cont += 1
-    # print(vertex_dict)
+    print(vertex_dict)
     vertex_file.close()
 
 
@@ -38,7 +38,7 @@ def read_edge():
         del(el[0:4])
         edge_dict['e'+str(cont)] = [vertex, faces, el]
         cont += 1
-    # print(edge_dict)
+    print(edge_dict)
     edge_file.close()
 
 
@@ -49,7 +49,7 @@ def read_face():
         face = linha.split(',')
         face_dict['f'+str(cont)] = face
         cont += 1
-    # print(face_dict)
+    print(face_dict)
     face_file.close()
 
 
