@@ -25,8 +25,8 @@ class cidade:
 
     def __init__(self):
         self.pontos = {}
-        self.camera_pos = np.array([0,0.5,0.25],dtype=np.float64)
-        self.camera_front= np.array([-0.1,0,.1],dtype=np.float64)
+        self.camera_pos = np.array([-0,0.5,1],dtype=np.float64)
+        self.camera_front= np.array([-0.1,0,1],dtype=np.float64)
         self.camera_up = np.array([0,1,0])
         self.last_x = int(w/2)
         self.last_y = int(h/2)
@@ -38,26 +38,31 @@ class cidade:
 
     def init_glut(self):
         glutInit()
-        glEnable(GL_DEPTH_TEST)
-        glDepthFunc(GL_LESS)
-        glShadeModel(GL_SMOOTH)
+        # glEnable(GL_DEPTH_TEST)
+        # glDepthFunc(GL_LESS)
+        # glEnable(GL_BLEND)
+        # glBlendFunci(GL_ONE)
+        # glEnable(GL_COLOR_MATERIAL)
+        # glShadeModel(GL_SMOOTH)
         glutInitWindowSize(w, h)
         glutCreateWindow('Cidade')
-        # glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA)
+        glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA)
+        glShadeModel(GL_FLAT)
         # glutIdleFunc(self.camera)
-        glViewport(0, 0, w, h)
+        # glViewport(0, 0, w, h)
         # glEnable(GL_DEPTH_TEST)
-        glDepthFunc(GL_LEQUAL)
-        glClearDepth(1.0)
+        # glDepthFunc(GL_LEQUAL)
+        # glClearDepth(1.0)
         glMatrixMode(GL_PROJECTION)
         # glutSetCursor(GLUT_CURSOR_NONE)
         glOrtho(-w/2, w/2, -h/2, h/2, -depth, depth)
-        glClearColor(0, 0, 0, 0)
+        # glClearColor(0, 0, 0, 1)
         glutMouseFunc(self.mouse)
         glutMotionFunc(self.motion)
         glutPassiveMotionFunc(self.motion)
         glutDisplayFunc(self.display)
         glutKeyboardFunc(self.keyboard)
+        # glDisable(GL_CULL_FACE)
         # glCullFace(GL_FRONT_AND_BACK)
         
         
@@ -80,20 +85,6 @@ class cidade:
         elif key == 'q':
             glutWarpPointer(int(w/2),int(h/2))
             firstMouse=True
-
-
-        # elif key =='l':
-        #     self.yaw+=1
-        #     self.camera_front[0] = cos(np.radians(self.yaw)) * cos(np.radians(self.pitch))
-        #     self.camera_front[1] = sin(np.radians(self.pitch))
-        #     self.camera_front[2] = sin(np.radians(self.yaw)) * cos(np.radians(self.pitch))
-        #     self.camera_front = normalize(self.camera_front)
-        # elif key =='k':
-        #     self.pitch+=1   
-        #     self.camera_front[0] = cos(np.radians(self.yaw)) * cos(np.radians(self.pitch))
-        #     self.camera_front[1] = sin(np.radians(self.pitch))
-        #     self.camera_front[2] = sin(np.radians(self.yaw)) * cos(np.radians(self.pitch))
-        #     self.camera_front = normalize(self.camera_front)
         self.camera()
 
    
@@ -116,27 +107,18 @@ class cidade:
         dx *= sensitivity
         dy *= sensitivity
         
-        # if x>512:
-        #     self.yaw +=1*s
-        # elif 512 < 0:
-        #     self.yaw -=1*s
-
-        # if y > 512 :
-        #     self.pitch-=1*s
-        # elif y < 512 :
-        #     self.pitch+=1*s
-        # glutWarpPointer(int(w/2),int(h/2))
         self.yaw += dx
         self.pitch -=dy
-        # if self.yaw > 180:
-        #     self.yaw = 180
-        # elif self.yaw < -180:
-        #     self.yaw = -180
-        # if self.pitch < -180:
-        #     self.pitch = -180
-        # elif self.pitch > 180:
-        #     self.pitch = 180
+        if self.yaw > 180:
+            self.yaw = 180
+        elif self.yaw < -180:
+            self.yaw = -180
+        if self.pitch < -89:
+            self.pitch = -89
+        elif self.pitch > 89:
+            self.pitch = 89
         
+        print(self.yaw,self.pitch)
         self.camera_front[0] = cos(np.radians(self.yaw)) * cos(np.radians(self.pitch))
         self.camera_front[1] = sin(np.radians(self.pitch))
         self.camera_front[2] = sin(np.radians(self.yaw)) * cos(np.radians(self.pitch))
@@ -172,12 +154,12 @@ class cidade:
 
     def display(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        self.cube1()
+        # self.cube1()
         # self.cube2()
         self.axis()
         self.casa()
         glFlush()
-        glutSwapBuffers()
+        # glutSwapBuffers()
 
     
     def telhado(self):
@@ -250,6 +232,7 @@ class cidade:
         glEnd()
 
     def casa(self):
+        glClearColor(0.0,0.0,0.0,0.0)
         self.telhado()
         self.paredes()
         self.porta()
