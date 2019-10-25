@@ -1,70 +1,59 @@
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
-import math,os,random,numpy as np
+import math,time,numpy as np
 
 cos = math.cos
 pi = math.pi
 sin = math.sin
 sqrt = math.sqrt
-w = 1024
-h = 1024
-depth = 1024
-fov = 0
-full = False
-firstMouse = True
-def normalize(v):
-    norm=np.linalg.norm(v, ord=1)
-    if norm==0:
-        norm=np.finfo(v.dtype).eps
-    return v/norm
-       
-class cidade:
+firstMouse =True
+w = 512
+h = 512
 
+
+class github:
 
 
     def __init__(self):
         self.pontos = {}
-        self.camera_pos = np.array([0,0,0.25],dtype=np.float64)
-        self.camera_front= np.array([-0.1,0,.1],dtype=np.float64)
+        self.camera_pos = np.array([0,0,0.1],dtype=np.float64)
+        self.camera_front= np.array([0,0,-.1],dtype=np.float64)
         self.camera_up = np.array([0,1,0])
         self.last_x = int(w/2)
         self.last_y = int(h/2)
         self.x ,self.y = self.last_x,self.last_y
         self.yaw = 0
         self.pitch = 0
-        self.init_glut()
-        self.teste, self.print = False, False
-
-    def init_glut(self):
         glutInit()
-        glEnable(GL_DEPTH_TEST)
-        glDepthFunc(GL_LESS)
-        glShadeModel(GL_SMOOTH)
         glutInitWindowSize(w, h)
         glutCreateWindow('Cidade')
-        # glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA)
-        # glutIdleFunc(self.camera)
-        glViewport(0, 0, w, h)
-        # glEnable(GL_DEPTH_TEST)
-        glDepthFunc(GL_LEQUAL)
-        glClearDepth(1.0)
-        glMatrixMode(GL_PROJECTION)
-        # glutSetCursor(GLUT_CURSOR_NONE)
-        glOrtho(-w/2, w/2, -h/2, h/2, -depth, depth)
+        glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH)
+        glutInitWindowPosition(0,0)
         glClearColor(0, 0, 0, 0)
+        glutDisplayFunc(self.display)
+        # glutIdleFunc(self.display)
+        glutKeyboardFunc(self.keyboard)
         glutMouseFunc(self.mouse)
         glutMotionFunc(self.motion)
-        glutPassiveMotionFunc(self.motion)
-        glutDisplayFunc(self.display)
-        glutKeyboardFunc(self.keyboard)
-        # glCullFace(GL_FRONT_AND_BACK)
-        
-        
+
+        glTranslatef(0.0, -0.5, 0.0)
+        glClearColor(0, 0, 0, 0)
 
     def keyboard(self, key, x, y):
+        glBegin(GL_LINES)
+        glColor3f(255,0,0)
+        glVertex3f(0,0,0)
+        glVertex3f(1,0,0)
+
+        glVertex3f(0,0,0)
+        glVertex3f(0,1,0)
+
+        glVertex3f(0,0,0)
+        glVertex3f(0,0,1)
+        glEnd()
         key = key.decode('utf8').lower()
-        speed = 0.1
+        speed = 0.01
         if key == chr(27):
             # os.system('clear')
             sys.exit()
@@ -76,7 +65,6 @@ class cidade:
             self.camera_pos -= speed * self.camera_front
         elif key == 'd':
             self.camera_pos += np.cross(self.camera_front,self.camera_up) * speed    
-    
         self.camera()
 
    
@@ -98,18 +86,18 @@ class cidade:
         self.yaw += dx
         self.pitch -=dy
         # if self.yaw > 180:
-        #     self.yaw = 180
+            # self.yaw = 180
         # elif self.yaw < -180:
-        #     self.yaw = -180
+            # self.yaw = -180
         # if self.pitch < -180:
-        #     self.pitch = -180
+            # self.pitch = -180
         # elif self.pitch > 180:
-        #     self.pitch = 180
+            # self.pitch = 180
         
         self.camera_front[0] = cos(np.radians(self.yaw)) * cos(np.radians(self.pitch))
         self.camera_front[1] = sin(np.radians(self.pitch))
         self.camera_front[2] = sin(np.radians(self.yaw)) * cos(np.radians(self.pitch))
-        self.camera_front = normalize(self.camera_front)
+        # self.camera_front = normalize(self.camera_front)
         # glutWarpPointer(int(w/2),int(h/2))
         self.camera()
 
@@ -120,9 +108,8 @@ class cidade:
         print("mouse_click: ", x, y, sep=" ", end="\n")
 
     def camera(self):
-        # glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        # glMatrixMode(GL_PROJECTION)
         glMatrixMode(GL_MODELVIEW)
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glLoadIdentity()
         gluPerspective(np.radians(45),1, 1, 100)
         print('-------------------------------------')
@@ -131,28 +118,15 @@ class cidade:
         print('cameraTarget:',self.camera_front+self.camera_pos)
         print('cameraUp',self.camera_up)
         print('-------------------------------------')
-        # glLoadIdentity()
         gluLookAt(*self.camera_pos,*(self.camera_pos+self.camera_front),*self.camera_up)
         glutPostRedisplay()
         # os.system('clear')
 
 
-
-    def display(self):
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        # self.cube1()
-        # self.cube2()
-        self.axis()
-        self.casa()
-        glFlush()
-        glutSwapBuffers()
-
-        
-
     def casa(self):
         # Rotação para visualizar a casa inteira (retirar depois)
-        # glRotatef(1.0, 0.2, 0.2, 0.0)
-        # time.sleep(0.04)
+        glRotatef(1.0, 0.2, 0.2, 0.0)
+        time.sleep(0.04)
 
         # Telhado
         glBegin(GL_TRIANGLES)
@@ -174,27 +148,20 @@ class cidade:
         # Estrutura da casa
         for x,y,z in self.pontos['casa']:
             glVertex3f(x,y,z)
-        glEnd()
 
         #Porta
-        glBegin(GL_QUADS)
         glColor4f(0.0,0.0,0.0,1.0)
         for x,y,z in self.pontos['contorno_porta']:
             glVertex3f(x,y,z)
-        glEnd()
-        glBegin(GL_QUADS)
         glColor4f(0.82,0.24,0.15,1.0)
         for x,y,z in self.pontos['porta']:
             glVertex3f(x,y,z)
-        glEnd()
-        glBegin(GL_QUADS)
+
         glColor4f(0.21,0.0,0.0,1.0)
         for x,y,z in self.pontos['macaneta']:
             glVertex3f(x,y,z)
-        glEnd()
+
         # Janelas
-        glBegin(GL_QUADS)
-        
         glColor4f(0.38,0.62,0.76,1.0)
         for x,y,z in self.pontos['janela_direita_frente']:
             glVertex3f(x,y,z)
@@ -224,7 +191,15 @@ class cidade:
             glVertex3f(x,y,z)
         glEnd()
 
+    def display(self):
+        # glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        self.casa()
+        glFlush()
+
+
+
     def inicializa(self):
+
         self.pontos['casa']=[[-0.55, 0.25, 0.0],[0.55, 0.25, 0.0],[0.55, 0.75, 0.0],[-0.55, 0.75, 0.0],[-0.55, 0.25, 0.60],[0.55, 0.25, 0.60],[0.55, 0.75, 0.60],[-0.55, 0.75, 0.60],[-0.55, 0.25, 0.0], [-0.55, 0.25, 0.60], [-0.55, 0.75, 0.60], [-0.55, 0.75, 0.0],[0.55, 0.25, 0.60], [0.55, 0.25, 0.0], [0.55, 0.75, 0.0], [0.55, 0.75, 0.60],[-0.55, 0.75, 0.0], [0.55, 0.75, 0.0], [-0.55, 0.75, 0.60], [0.55, 0.75, 0.60]]
         self.pontos['telhado']=[[-0.80,0.75, 0.0], [0.80,0.75, 0.0], [0.05,1.0,0.25],[0.80,0.75, 0.0], [0.80,0.75, 0.60], [0.05,1.0,0.25],[-0.80,0.75, 0.60], [0.80,0.75, 0.60], [0.05,1.0,0.25],[-0.80,0.75, 0.0], [-0.80,0.75, 0.60], [0.05,1.0,0.25]]
         self.pontos['forro'] = [[-0.80,0.75, 0.0], [0.80,0.75,0.60], [-0.80,0.75,0.60], [0.80,0.75, 0.0]]     
@@ -244,57 +219,7 @@ class cidade:
         self.pontos['grade_janela_esquerda_1'] = [[-0.55,0.4,0.29],[-0.55,0.4,0.31],[-0.55,0.6,0.31],[-0.55,0.6,0.29]]
         self.pontos['grade_janela_esquerda_2'] = [[-0.55,0.49,0.2],[-0.55,0.49,0.4],[-0.55,0.51,0.4],[-0.55,0.51,0.2]]
 
-        glutWarpPointer(int(w/2),int(h/2))
-        if full:
-            glutFullScreenToggle()
-        self.camera()
-        self.axis()
-        self.cube1()
-        self.pontos['casa'] = []
-        self.pontos['telhado'] = []
-
-
-    def axis(self):
-        vertex = (((0.1,0,0),(255,0,0)),((0,0.1,0),(0,255,0)),((0,0,0.1),(0,0,255)))
-        # x = red
-        # y = green 
-        # z = blue
-        glBegin(GL_LINES)
-        for v,c in vertex:
-            r,g,b = c
-            glColor3f(r,g,b)
-            glVertex3fv((0,0,0))
-            glVertex3fv(v)
-        glEnd()
-
-
-    def cube1(self):
-        vertex = ((-0.25, 0.25, -0.25), (0.25, 0.25, -0.25), (-0.25, -0.25, -0.25), (0.25, -0.25, -0.25),
-                  (-0.25, 0.25, 0.25), (0.25, 0.25, 0.25), (-0.25, -0.25, 0.25), (0.25, -0.25, 0.25))
-        edges = ((0, 1, 3, 2), (1,5,7,3), (5,5,6,7),
-                 (4,0,2,6),( 2,3,7,6), (4,5,1,0))
-        glColor3f(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-        for edge in edges:
-            glBegin(GL_QUADS)
-            for v in edge:
-                glVertex3fv(vertex[v])
-            glEnd()
-
-    def cube2(self):
-        vertex = ((0.3, 0.6, 0.3), (0.6, 0.6, 0.3), (0.3, 0.3, 0.3), (0.6, 0.3, 0.3),
-                  (0.3, 0.6, 0.6), (0.6, 0.6, 0.6), (0.3, 0.3, 0.6), (0.6, 0.3, 0.6))
-        edges = ((0, 1), (1, 3), (3, 2), (2, 0), (3, 7), (7, 5),
-                 (5, 1), (5, 4), (4, 0), (4, 6), (6, 7), (6, 2))
-        glBegin(GL_LINES)
-        glColor3f(random.randint(0, 255), random.randint(
-            0, 255), random.randint(0, 255))
-        for edge in edges:
-            for v in edge:
-                glVertex3fv(vertex[v])
-        glEnd()
-
-
 if __name__ == '__main__':
-    git = cidade()
+    git = github()
     git.inicializa()
     glutMainLoop()
