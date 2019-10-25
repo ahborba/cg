@@ -1,7 +1,7 @@
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
-import math,os,random,numpy as np
+import math,os,random,numpy as np,pygame
 
 cos = math.cos
 pi = math.pi
@@ -25,7 +25,7 @@ class cidade:
 
     def __init__(self):
         self.pontos = {}
-        self.camera_pos = np.array([0,0,0.25],dtype=np.float64)
+        self.camera_pos = np.array([0,0.5,0.25],dtype=np.float64)
         self.camera_front= np.array([-0.1,0,.1],dtype=np.float64)
         self.camera_up = np.array([0,1,0])
         self.last_x = int(w/2)
@@ -63,6 +63,7 @@ class cidade:
         
 
     def keyboard(self, key, x, y):
+        global firstMouse
         key = key.decode('utf8').lower()
         speed = 0.1
         if key == chr(27):
@@ -75,15 +76,32 @@ class cidade:
         elif key == 's':
             self.camera_pos -= speed * self.camera_front
         elif key == 'd':
-            self.camera_pos += np.cross(self.camera_front,self.camera_up) * speed    
-    
+            self.camera_pos += np.cross(self.camera_front,self.camera_up) * speed 
+        elif key == 'q':
+            glutWarpPointer(int(w/2),int(h/2))
+            firstMouse=True
+
+
+        # elif key =='l':
+        #     self.yaw+=1
+        #     self.camera_front[0] = cos(np.radians(self.yaw)) * cos(np.radians(self.pitch))
+        #     self.camera_front[1] = sin(np.radians(self.pitch))
+        #     self.camera_front[2] = sin(np.radians(self.yaw)) * cos(np.radians(self.pitch))
+        #     self.camera_front = normalize(self.camera_front)
+        # elif key =='k':
+        #     self.pitch+=1   
+        #     self.camera_front[0] = cos(np.radians(self.yaw)) * cos(np.radians(self.pitch))
+        #     self.camera_front[1] = sin(np.radians(self.pitch))
+        #     self.camera_front[2] = sin(np.radians(self.yaw)) * cos(np.radians(self.pitch))
+        #     self.camera_front = normalize(self.camera_front)
         self.camera()
 
    
 
     def motion(self, x, y):
         global firstMouse
-        sensitivity = 0.05
+        print(x,y)
+        sensitivity = 0.5
         # x = x-(w/2)
         # y = (h/2)-y
         if firstMouse:
@@ -92,9 +110,22 @@ class cidade:
             firstMouse = False
         dx = (x - self.last_x) 
         dy = (self.last_y - y) 
+        
         self.last_x , self.last_y = x,y
+
         dx *= sensitivity
         dy *= sensitivity
+        
+        # if x>512:
+        #     self.yaw +=1*s
+        # elif 512 < 0:
+        #     self.yaw -=1*s
+
+        # if y > 512 :
+        #     self.pitch-=1*s
+        # elif y < 512 :
+        #     self.pitch+=1*s
+        # glutWarpPointer(int(w/2),int(h/2))
         self.yaw += dx
         self.pitch -=dy
         # if self.yaw > 180:
@@ -109,7 +140,7 @@ class cidade:
         self.camera_front[0] = cos(np.radians(self.yaw)) * cos(np.radians(self.pitch))
         self.camera_front[1] = sin(np.radians(self.pitch))
         self.camera_front[2] = sin(np.radians(self.yaw)) * cos(np.radians(self.pitch))
-        self.camera_front = normalize(self.camera_front)
+        # self.camera_front = normalize(self.camera_front)
         # glutWarpPointer(int(w/2),int(h/2))
         self.camera()
 
@@ -124,7 +155,8 @@ class cidade:
         # glMatrixMode(GL_PROJECTION)
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
-        gluPerspective(np.radians(45),1, 1, 100)
+        gluPerspective(0.45,1, 1, 100)
+        self.camera_pos[1]=.5
         print('-------------------------------------')
         print('cameraPos:',self.camera_pos)
         print('cameraFront:',self.camera_front)
@@ -140,35 +172,27 @@ class cidade:
 
     def display(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        # self.cube1()
+        self.cube1()
         # self.cube2()
         self.axis()
         self.casa()
         glFlush()
         glutSwapBuffers()
 
-        
-
-    def casa(self):
-        # Rotação para visualizar a casa inteira (retirar depois)
-        # glRotatef(1.0, 0.2, 0.2, 0.0)
-        # time.sleep(0.04)
-
-        # Telhado
+    
+    def telhado(self):
         glBegin(GL_TRIANGLES)
-        # glColor4f(0.21,0.0,0.0,1.0)
         glColor4f(0.21,0.0,0.0,1.0)
         for x,y,z in self.pontos['telhado']:
             glVertex3f(x,y,z)
         glEnd()
-
-        # Forro do telhado
         glBegin(GL_QUADS)
         glColor4f(0.21,0.0,0.0,1.0)
         for x,y,z in self.pontos['forro']:
             glVertex3f(x,y,z)
         glEnd()
-
+    
+    def paredes(self):
         glBegin(GL_QUADS)
         glColor4f(0.42,0.26,0.17,1.0)
         # Estrutura da casa
@@ -176,7 +200,8 @@ class cidade:
             glVertex3f(x,y,z)
         glEnd()
 
-        #Porta
+    def porta(self):
+        # Porta
         glBegin(GL_QUADS)
         glColor4f(0.0,0.0,0.0,1.0)
         for x,y,z in self.pontos['contorno_porta']:
@@ -192,9 +217,8 @@ class cidade:
         for x,y,z in self.pontos['macaneta']:
             glVertex3f(x,y,z)
         glEnd()
-        # Janelas
+    def janela(self):
         glBegin(GL_QUADS)
-        
         glColor4f(0.38,0.62,0.76,1.0)
         for x,y,z in self.pontos['janela_direita_frente']:
             glVertex3f(x,y,z)
@@ -204,6 +228,7 @@ class cidade:
             glVertex3f(x,y,z)
         for x,y,z in self.pontos['janela_esquerda']:
             glVertex3f(x,y,z)
+        
 
         glColor4f(0.0,0.0,0.0,1.0)
         for x,y,z in self.pontos['grade_janela_direita_frente_1']:
@@ -223,6 +248,13 @@ class cidade:
         for x,y,z in self.pontos['grade_janela_esquerda_2']:
             glVertex3f(x,y,z)
         glEnd()
+
+    def casa(self):
+        self.telhado()
+        self.paredes()
+        self.porta()
+        self.janela()
+        
 
     def inicializa(self):
         self.pontos['casa']=[[-0.55, 0.25, 0.0],[0.55, 0.25, 0.0],[0.55, 0.75, 0.0],[-0.55, 0.75, 0.0],[-0.55, 0.25, 0.60],[0.55, 0.25, 0.60],[0.55, 0.75, 0.60],[-0.55, 0.75, 0.60],[-0.55, 0.25, 0.0], [-0.55, 0.25, 0.60], [-0.55, 0.75, 0.60], [-0.55, 0.75, 0.0],[0.55, 0.25, 0.60], [0.55, 0.25, 0.0], [0.55, 0.75, 0.0], [0.55, 0.75, 0.60],[-0.55, 0.75, 0.0], [0.55, 0.75, 0.0], [-0.55, 0.75, 0.60], [0.55, 0.75, 0.60]]
@@ -250,8 +282,6 @@ class cidade:
         self.camera()
         self.axis()
         self.cube1()
-        self.pontos['casa'] = []
-        self.pontos['telhado'] = []
 
 
     def axis(self):
