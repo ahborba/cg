@@ -14,24 +14,14 @@ except:
 files = []
 
 
-def fourier(name):
-    img = cv2.imread(name, 0)
-
+def fourier(img):
     dft = cv2.dft(np.float32(img), flags=cv2.DFT_COMPLEX_OUTPUT)
     dft_shift = np.fft.fftshift(dft)
-
     magnitude_spectrum = 20 * \
         np.log(cv2.magnitude(dft_shift[:, :, 0], dft_shift[:, :, 1]))
-
-    plt.subplot(121), plt.imshow(img, cmap='gray')
-    plt.title('Input Image'), plt.xticks([]), plt.yticks([])
-    plt.subplot(122), plt.imshow(magnitude_spectrum, cmap='gray')
-    plt.title('Magnitude Spectrum'), plt.xticks([]), plt.yticks([])
-    plt.show()
-
+    return magnitude_spectrum
 
 def list_files(path):
-
     for p, _, f in os.walk(os.path.abspath(path)):
         i = 0
         for file_name in f:
@@ -44,4 +34,14 @@ def list_files(path):
 
 if __name__ == "__main__":
     list_files(target)
-    pre_processing(files, target)
+    for f_name,f_class in files:
+        original = cv2.imread(target+f_name,0)
+        shape = pre_processing(original)
+        f = fourier(shape)
+        # plt.subplot(121),plt.imshow(original,'gray')
+        plt.subplot(121),plt.imshow(shape, cmap='gray')
+        plt.subplot(122),plt.imshow(f, cmap='gray')
+        plt.show()
+        # input()
+                # characteristic_extraction()
+        
