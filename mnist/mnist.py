@@ -4,6 +4,7 @@ import os
 import sys
 from matplotlib import pyplot as plt
 from pre_processing import pre_processing
+sys.settrace 
 try:
     target = sys.argv[1]
     target = './'+target if not target.startswith('./') else target
@@ -12,13 +13,25 @@ except:
     print("Insira o nome do objeto desejado e tente novamente.")
     exit()
 files = []
-
+error = False
+def binary(img):
+    # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    ret,thresh1 = cv2.threshold(img,127,255,cv2.THRESH_BINARY_INV)
+    plt.imshow(thresh1,'gray')
+    # plt.show()
+    return thresh1
 
 def fourier(img):
-    dft = cv2.dft(np.float32(img), flags=cv2.DFT_COMPLEX_OUTPUT)
-    dft_shift = np.fft.fftshift(dft)
-    magnitude_spectrum = 20 * \
-        np.log(cv2.magnitude(dft_shift[:, :, 0], dft_shift[:, :, 1]))
+    try:
+        f = np.fft.fft2(img)
+        fshift = np.fft.fftshift(f)
+        magnitude_spectrum = 20*np.log(np.abs(fshift))
+        # plt.subplot(121),plt.imshow(magnitude_spectrum, cmap = 'gray')
+        # plt.subplot(122),plt.imshow(f, cmap = 'gray')
+        # plt.show()
+    except Exception as e:
+        return img
+        
     return magnitude_spectrum
 
 def list_files(path):
@@ -33,15 +46,35 @@ def list_files(path):
 
 
 if __name__ == "__main__":
+    count = 0
     list_files(target)
     for f_name,f_class in files:
+        count+=1
         original = cv2.imread(target+f_name,0)
         shape = pre_processing(original)
+        f=shape
+        if f.shape[1]==0:
+            print(f_name)
+            plt.subplot(121),plt.imshow(original, cmap = 'gray')
+            plt.subplot(122),plt.imshow(f, cmap = 'gray')
+            plt.show()
+        
         f = fourier(shape)
+
+        w,h = f.shape
+       
+        for i in range(0,w):
+            for j in range(0,h):
+                print(f[i][j],end=',')
+                
+                
+        print(f_class)
+       
+        # input()
         # plt.subplot(121),plt.imshow(original,'gray')
-        plt.subplot(121),plt.imshow(shape, cmap='gray')
-        plt.subplot(122),plt.imshow(f, cmap='gray')
-        plt.show()
+        # plt.subplot(121),plt.imshow(shape, cmap='gray')
+        # plt.subplot(122),plt.imshow(f, cmap='gray')
+        # plt.show()
         # input()
                 # characteristic_extraction()
         

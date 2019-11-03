@@ -13,7 +13,7 @@ shape_right=0
 def binary(img):
     # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     ret,thresh1 = cv2.threshold(img,127,255,cv2.THRESH_BINARY_INV)
-    plt.imshow(thresh1,'gray')
+    # plt.imshow(thresh1,'gray')
     # plt.show()
     return thresh1
 
@@ -24,7 +24,7 @@ def fourier(img):
     magnitude_spectrum = 20*np.log(cv2.magnitude(dft_shift[:,:,0],dft_shift[:,:,1]))
 
     plt.imshow(img, cmap = 'gray')
-    plt.imshow(magnitude_spectrum, cmap = 'gray')
+    # plt.imshow(magnitude_spectrum, cmap = 'gray')
     plt.show()
     
     return magnitude_spectrum
@@ -43,7 +43,7 @@ def get_shape(img):
                 elif j < left:
                     if j < shape_left:
                         shape_left= j
-                    left = j-1
+                    left = j
                 if i < up:
                     if i < shape_up:
                         shape_up= i
@@ -52,21 +52,26 @@ def get_shape(img):
                     if i > shape_down:
                         shape_down= i
                     down = i
-    
-    # print('up: ',up)
-    # print('down: ',down)
-    # print('left: ',left)
-    # print('right: ',right)
-    # print('img[',left,':',right,',',up,':',down,']')
-    # print(img[up:down,left:right])
-    # input()
-    down = up +24
-    right = left + 24
-    if down > 27:
-        down = 27
-    if right > 27:
-        right=27
-    return img[up:down,left:right]
+    if (left + 24) > 27:
+        left = 27-24
+    if (up+24)>27:
+        up = 27-24
+
+    return img[up:up+23,left:left+23]
+
+
+
+    # down = up +24
+    # right = left + 24
+
+
+    # if down > 27:
+    #     down = 27
+    #     up = down-24
+    # if right > 27:
+    #     left = 3
+    #     right=27
+    # return img[up:down,left:right]
     
 
 def pre_processing(img):
