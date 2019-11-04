@@ -1,3 +1,4 @@
+import pickle
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -222,7 +223,7 @@ class NN(object):
         else:
             plt.legend([plot_train], ["Train"])
 
-        plt.show()
+#        plt.show()
 
         cm = pd.crosstab(np.argmax(self.layers['a%d' % (len(self.layers))], axis=1), np.argmax(labels, axis=1),
                          rownames=['Actual'], colnames=['Predicted'])
@@ -267,27 +268,15 @@ def load_data(target,to_predict = False):
         return(x_list,y_list,es)
     return(x_list,y_list)
 
-def print_data(d):
-    for a in d:
-        print(a,end=',')
-        for c in d[a]:
-            print(*c,sep=',',end='')
-        print()
+def save_model(d,name):
+    f = open('./csv/'+name+'.pkl',"wb")
+    pickle.dump(d,f)
+    f.close()
 
-def read_model():
-    w,l = {},{}
-    with open('./csv/model.csv') as md:
-        for line in md:
-            line = line.split(',')
-            if line[0].startswith('a'):
-                layer = line[0]
-                line.pop(0)
-                l[layer] = [float(lay) for lay in line]
-            elif line[0].startswith('w'):
-                weight = line[0]
-                line.pop(0)
-                w[weight] = [float(wei) for wei in line]
-    return (w,l)
+def read_model(name):
+    with open('./csv/'+name+'.pkl', 'rb') as f:
+        data = pickle.load(f)
+        return data
 
 def train():
     x,y = load_data('./csv/train.csv')
@@ -295,25 +284,29 @@ def train():
     y = np.array(y)
     model = NN()
     model.add_layer(10, output_layer=True)
-    model.fit(x, y,epochs=200000)
+    model.fit(x, y,epochs=100000)
     # write_dict('weights.txt',model.weights)
     # write_dict('layers.txt',model.layers)
     print('higher: ',model.higher,'\n\n\n\n')
     model.layers = model.l
     model.weights = model.w
-    print_data(model.l)
-    print_data(model.w)
+    save_model(model.l,'layer')
+    save_model(model.w,'weight')
 def predict():
     model = NN()
-    model.weights,model.layers = read_model()
+    model.layers = read_model('layer')
+    model.weights = read_model('weight')
     x,y,esperado = load_data('./csv/val.csv',True)
     x = np.array(x)
     y_resultado = model.predict(x)
     cont=0
-    for i in range(0,len(y_resultado)):
-        if esperado[i] == y_resultado[i]:
-            cont+=1
-    print(cont)
+    for j in range(0,10):
+        v = [0]*10
+        for i in range(0,len(y_resultado)):
+            if esperado[i] == j:
+                v[y_resultado[i]]+=1
+        print(*v,sep =',')
+    
 if __name__ == "__main__":
     # train()
     predict()
