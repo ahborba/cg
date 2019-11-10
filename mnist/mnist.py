@@ -1,48 +1,21 @@
+from pre_process import pre_processing
+from keras.utils import plot_model
+import matplotlib.pyplot as plt
+import tensorflow as tf
 import numpy as np
+from k import NN
 import cv2
 import os
-import sys
-from matplotlib import pyplot as plt
-from pre_processing import pre_processing
-sys.settrace 
-try:
-    target = sys.argv[1]
-    target = './'+target if not target.startswith('./') else target
-    target = target+'/' if not target.endswith('/') else target
-except:
-    print("Insira o nome do objeto desejado e tente novamente.")
-    exit()
-files = []
-error = False
-def binary(img):
-    # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    ret,thresh1 = cv2.threshold(img,127,255,cv2.THRESH_BINARY_INV)
-    # plt.imshow(thresh1,'gray')
-    # plt.show()
-    return thresh1
-fant = None
-cont = 0
-def fourier(img):
-    global fant,cont
-    if cont == 0:
-        fant = img
-        cont+=1
-        # print('first')
-    try:
-        f = np.fft.fft2(img)
-        fshift = np.fft.fftshift(f)
-        magnitude_spectrum = 20*np.log(np.abs(fshift))
-        # plt.subplot(121),plt.imshow(fant, cmap = 'gray')
-        # plt.subplot(122),plt.imshow(magnitude_spectrum, cmap = 'gray')
-        # plt.show()
-    except Exception as e:
-        return img
-        
-    fant = magnitude_spectrum
-    return magnitude_spectrum
 
-def list_files(path):
-    for p, _, f in os.walk(os.path.abspath(path)):
+
+def hot_encode(n):
+    encode = [0]*10
+    encode[n]=1
+    return encode
+
+def list_files(target):
+    files = []
+    for p, _, f in os.walk(os.path.abspath(target)):
         i = 0
         for file_name in f:
             i += 1
@@ -50,39 +23,48 @@ def list_files(path):
             f = file_name.split('_')[1]
             file_class = int(f.split('.jpeg')[0].split('class=')[1])
             files.append((file_name, file_class))
+    return files
 
-
-if __name__ == "__main__":
-    count = 0
-    list_files(target)
+# Converte as imagens p/ entrada de uma rede neural.
+def load_data(target):
+    files = list_files('./pre_processing/'+target)
+    x,y = [],[]
     for f_name,f_class in files:
-        count+=1
-        original = cv2.imread(target+f_name,0)
-        shape = pre_processing(original)
-        f=shape
-        if f.shape[1]==0:
-            input('aoieo')
-            print(f_name)
+        img = cv2.imread(target+f_name,0)
+        xi = []
+        for l in img:
+            for c in l:
+                xi.append(c)
+        xi = np.array(xi)
         
-        f = fourier(shape)
-        w,h = f.shape
-        # plt.subplot(121),plt.imshow(shape, cmap = 'gray')
-        # plt.subplot(122),plt.imshow(f, cmap = 'gray')
-        # plt.show()
-        
-       
-        for i in range(0,w):
-            for j in range(0,h):
-                print(f[i][j],end=',')
-                
-                
-        print(f_class)
-       
-        # input()
-        # plt.subplot(121),plt.imshow(original,'gray')
-        # plt.subplot(121),plt.imshow(shape, cmap='gray')
-        # plt.subplot(122),plt.imshow(f, cmap='gray')
-        # plt.show()
-        # input()
-                # characteristic_extraction()
-        
+        x.append(xi)
+        y.append(f_class)
+    x= np.array(x)
+    y= np.array(y)
+    return (x,y)
+
+def main():
+    pre_processing(['./train/','./val/'])
+    x,y = load_data('./train/')
+    k = NN(x,y,20)
+    x = k.normalize(x)
+    k.add_layer(50,tf.nn.relu)
+    k.add_layer(50,tf.nn.relu)
+    k.add_layer(10,tf.nn.softmax)
+    h = k.train()
+    x_val,y_val = load_data('./val/')
+    predictions = [ np.argmax(yi) for yi in np.array(k.predict(x_val))]
+    print(k.confusion_matrix(y_val,predictions))
+    loss, acc = k.evaluate(x_val,y_val)
+    print('loss: ',loss)
+    print('acc: ',acc*100,'%')
+    # Plot training & validation accuracy values
+    plt.plot(h.history['acc'])
+    # plt.plot(h2.history['acc'])
+    plt.title('Model accuracy')
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Test'], loc='upper left')
+    plt.show()
+if __name__ == "__main__":
+    main()
